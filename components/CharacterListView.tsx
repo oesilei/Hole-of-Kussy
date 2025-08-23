@@ -63,6 +63,27 @@ const CharacterListView: React.FC<CharacterListViewProps> = ({ characters, user,
         reader.readAsText(file);
     };
     
+    const handleExport = (id: string) => {
+        const characterToExport = characters.find(c => c.id === id);
+        if (!characterToExport) {
+            alert("Erro: Personagem não encontrado para exportar.");
+            return;
+        }
+
+        // Remove data do usuário antes de exportar para portabilidade
+        const { userId, userName, ...exportData } = characterToExport;
+        
+        const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+            JSON.stringify(exportData, null, 2)
+        )}`;
+        
+        const link = document.createElement('a');
+        link.href = jsonString;
+        const fileName = `${exportData.info.handle?.replace(/[\W_]+/g, "_").toLowerCase() || 'cyberpunk_character'}.json`;
+        link.download = fileName;
+        link.click();
+    };
+
     return (
         <div className="max-w-4xl mx-auto">
             <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 text-center sm:text-left">
@@ -100,6 +121,7 @@ const CharacterListView: React.FC<CharacterListViewProps> = ({ characters, user,
                             onEdit={onEdit}
                             onDelete={onDelete}
                             onShowSummary={onShowSummary}
+                            onExport={handleExport}
                             showOwner={user.isAdmin}
                         />
                     ))

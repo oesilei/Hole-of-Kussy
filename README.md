@@ -1,20 +1,50 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Cyberpunk Red Character Manager
 
-# Run and deploy your AI Studio app
+A web application to create, manage, and store character sheets for the Cyberpunk RED tabletop roleplaying game.
 
-This contains everything you need to run your app locally.
+## Deployment to GitHub Pages
 
-View your app in AI Studio: https://ai.studio/apps/drive/1nleEAax8FFWJd-ncgKbXCFbejTUe0_Aa
+This project is now configured for easy deployment to GitHub Pages using GitHub Actions.
 
-## Run Locally
+### 1. Repository Name Configuration
 
-**Prerequisites:**  Node.js
+Before deploying, you **must** update the `base` path in the `vite.config.ts` file to match your GitHub repository name.
 
+- Open `vite.config.ts`.
+- Find the line `base: '/cyberpunk-red-character-manager/',`.
+- Change `/cyberpunk-red-character-manager/` to `/<your-repo-name>/`. For example, if your repository URL is `https://github.com/your-username/my-cyberpunk-app`, you would set `base: '/my-cyberpunk-app/',`.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### 2. GitHub Pages Settings
+
+You need to configure your repository to use GitHub Pages with the GitHub Actions build workflow.
+
+1.  Go to your repository on GitHub.
+2.  Click on the **"Settings"** tab.
+3.  In the left sidebar, click on **"Pages"**.
+4.  Under "Build and deployment", select **"GitHub Actions"** as the source.
+
+### 3. Deployment
+
+The deployment will automatically trigger every time you push code to your `main` branch (or `master`, depending on your repository's default).
+
+- Commit and push all the new configuration files (`package.json`, `vite.config.ts`, etc.) to your repository.
+- Go to the **"Actions"** tab in your GitHub repository to monitor the deployment progress.
+- Once the workflow is complete, your application will be live at the URL provided in the "Pages" settings (usually `https://<your-username>.github.io/<your-repo-name>/`).
+
+---
+
+## Local Development
+
+To run the application locally, you need to have [Node.js](https://nodejs.org/) installed.
+
+1.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+2.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+
+This will start a local server, and you can view the application in your browser at the URL provided in the console.

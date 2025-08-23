@@ -6,10 +6,11 @@ interface CharacterCardProps {
     onEdit: (id: string) => void;
     onDelete: (id: string) => void;
     onShowSummary: (id: string) => void;
+    onExport: (id: string) => void;
     showOwner?: boolean;
 }
 
-const CharacterCard: React.FC<CharacterCardProps> = ({ character, onEdit, onDelete, onShowSummary, showOwner }) => {
+const CharacterCard: React.FC<CharacterCardProps> = ({ character, onEdit, onDelete, onShowSummary, onExport, showOwner }) => {
     const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2YwMCI+PHBhdGggZD0iTTIgMjBoMjB2M0gyem0zLjA1LTguNDVsMS40Mi0xLjQyTDExIDQuMjdMMTYuNTQgMTAuMTNsMS40MSAxLjQyTDEyIDE4LjY5bC02Ljk1LTYuMTR6Ii8+PC9zdmc+';
 
     return (
@@ -31,6 +32,9 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, onEdit, onDele
             <div className="flex gap-2 mt-4">
                 <button onClick={() => onEdit(character.id)} className="text-sm flex-1 py-1 px-2 rounded-none bg-transparent border-2 border-cyan-400 text-cyan-400 transition-all duration-300 uppercase hover:bg-cyan-400 hover:text-gray-900 hover:shadow-[0_0_10px_#0ff]">
                     Editar
+                </button>
+                <button onClick={() => onExport(character.id)} className="text-sm flex-1 py-1 px-2 rounded-none bg-transparent border-2 border-yellow-500 text-yellow-500 transition-all duration-300 uppercase hover:bg-yellow-500 hover:text-gray-900 hover:shadow-[0_0_10px_#ff0]">
+                    Exportar
                 </button>
                 <button onClick={() => onDelete(character.id)} className="text-sm flex-1 py-1 px-2 rounded-none bg-transparent border-2 border-red-500 text-red-500 transition-all duration-300 uppercase hover:bg-red-500 hover:text-gray-900 hover:shadow-[0_0_10px_#f00]">
                     Excluir
