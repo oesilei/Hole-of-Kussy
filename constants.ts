@@ -1,3 +1,5 @@
+import type { Character, CyberwareCategory } from './types';
+
 export const STATS_LIST = [
     { key: 'int', name: 'INT' },
     { key: 'ref', name: 'REF' },
@@ -40,3 +42,44 @@ export const ROLES_LIST = [
     { name: 'Fixers', description: 'Negociantes, organizadores e corretores de informação nos Mercados da Meia-Noite pós-guerra da Rua.' },
     { name: 'Nomads', description: 'Especialistas em transporte, guerreiros de estrada supremos, piratas e contrabandistas que mantêm o mundo conectado.' },
 ];
+
+export const CYBERWARE_CATEGORIES: CyberwareCategory[] = [
+    'Right Cybereye', 'Left Cybereye',
+    'Right Cyberarm', 'Left Cyberarm',
+    'Right Cyberleg', 'Left Cyberleg',
+    'Cyberaudio Suite', 'Neural Link',
+    'Internal', 'External', 'Fashionware', 'Borgware'
+];
+
+export const createNewCharacter = (): Character => ({
+  id: '',
+  avatar: '',
+  info: { handle: '', role: '', rank: '', roleAbility: '' },
+  stats: Object.fromEntries(STATS_LIST.map(s => [s.key, ''])) as any,
+  skills: Object.fromEntries(ALL_SKILLS.map(s => [getSkillId(s), ''])),
+  combat: {
+    hp: '',
+    wounded: '',
+    death: '',
+    weapons: [],
+    armor: {
+        head: { sp: '' },
+        body: { sp: '' },
+        shield: { sp: '' }
+    }
+  },
+  cyberware: [],
+  eddies: '',
+  lifepath: {
+    culturalOrigins: '', personality: '', clothingStyle: '', hairstyle: '',
+    valueMost: '', valuedPerson: '', feelingsAboutPeople: '', valuedPossession: '',
+    familyBackground: '', childhoodEnvironment: '', familyCrisis: '', lifeGoals: '',
+    friends: [], enemies: [], tragicLoveAffairs: [],
+    roleSpecificLifepath: '',
+  },
+  gear: '', fashion: '', ammunition: '', aliases: '', reputation: '', notes: '',
+  criticalInjuries: '', addictions: '',
+  housing: { rent: '', lifestyle: '' },
+  userId: '',
+  userName: '',
+});

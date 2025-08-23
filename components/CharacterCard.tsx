@@ -15,11 +15,13 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, onEdit, onDele
     return (
         <div className="border border-red-500 cyber-section-bg p-4 flex flex-col justify-between transition-all duration-300 hover:border-cyan-400 hover:shadow-[0_0_15px_#0ff4]">
             <div onClick={() => onShowSummary(character.id)} className="cursor-pointer flex-grow">
-                 <img
-                    src={character.avatar || defaultAvatar}
-                    alt={`${character.info.handle}'s avatar`}
-                    className="w-full aspect-square object-cover mb-4 border-2 border-cyan-400"
-                />
+                 <div className="w-full max-w-[360px] mx-auto aspect-square overflow-hidden mb-4 border-2 border-cyan-400">
+                    <img
+                        src={character.avatar || defaultAvatar}
+                        alt={`${character.info.handle}'s avatar`}
+                        className="w-full h-full object-cover"
+                    />
+                </div>
                 <h3 className="font-display text-2xl text-cyan-300 truncate">{character.info.handle || 'Mercenário Sem Nome'}</h3>
                 <p className="text-red-500">{character.info.role || 'Sem Role'}</p>
                 {showOwner && character.userName && (

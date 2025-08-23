@@ -1,12 +1,24 @@
 import type { Character, User } from './types';
 
-// In-memory "database" to simulate backend storage.
-// This will reset on page refresh.
-let charactersDB: Character[] = [];
+const STORAGE_KEY = 'cyberpunk-red-characters';
 
-// Hardcoded admin email for demonstration purposes.
-// To test the admin view, sign in with this Google account.
-const ADMIN_EMAIL = 'admin@example.com';
+const getCharactersFromStorage = (): Character[] => {
+    try {
+        const storedChars = localStorage.getItem(STORAGE_KEY);
+        return storedChars ? JSON.parse(storedChars) : [];
+    } catch (error) {
+        console.error("Falha ao ler personagens do localStorage", error);
+        return [];
+    }
+};
+
+const saveCharactersToStorage = (characters: Character[]) => {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(characters));
+    } catch (error) {
+        console.error("Falha ao salvar personagens no localStorage", error);
+    }
+};
 
 /**
  * Simulates a login request to the backend.
@@ -19,7 +31,7 @@ export const simulateLogin = (googleUser: {
   sub?: string;
   picture?: string;
 }): Promise<User> => {
-  console.log('Simulating login for:', googleUser.email);
+  console.log('Simulando login para:', googleUser.email);
   return new Promise((resolve) => {
     setTimeout(() => {
       const user: User = {
@@ -27,7 +39,7 @@ export const simulateLogin = (googleUser: {
         name: googleUser.name || 'Unknown User',
         email: googleUser.email || '',
         picture: googleUser.picture || '',
-        isAdmin: googleUser.email === ADMIN_EMAIL,
+        isAdmin: false,
       };
       resolve(user);
     }, 500);
@@ -35,14 +47,15 @@ export const simulateLogin = (googleUser: {
 };
 
 /**
- * Simulates fetching characters from the backend.
+ * Fetches characters from local storage.
  * @param user The currently logged-in user.
  * @returns A promise that resolves to an array of characters.
  */
 export const fetchCharacters = (user: User): Promise<Character[]> => {
-  console.log(`Fetching characters for ${user.name} (isAdmin: ${user.isAdmin})`);
+  console.log(`Buscando personagens para ${user.name} (isAdmin: ${user.isAdmin})`);
   return new Promise((resolve) => {
     setTimeout(() => {
+      const charactersDB = getCharactersFromStorage();
       if (user.isAdmin) {
         // Admins get all characters
         resolve(JSON.parse(JSON.stringify(charactersDB)));
@@ -51,20 +64,21 @@ export const fetchCharacters = (user: User): Promise<Character[]> => {
         const userChars = charactersDB.filter((char) => char.userId === user.id);
         resolve(JSON.parse(JSON.stringify(userChars)));
       }
-    }, 1000);
+    }, 500);
   });
 };
 
 /**
- * Simulates saving a character to the backend.
+ * Saves a character to local storage.
  * @param character The character to save.
  * @param user The user saving the character.
  * @returns A promise that resolves to the saved character.
  */
 export const saveCharacter = (character: Character, user: User): Promise<Character> => {
-  console.log(`${user.name} is saving character: ${character.info.handle}`);
+  console.log(`${user.name} está salvando o personagem: ${character.info.handle}`);
   return new Promise((resolve) => {
     setTimeout(() => {
+      const charactersDB = getCharactersFromStorage();
       const charWithUser = {
         ...character,
         userId: user.id,
@@ -80,36 +94,39 @@ export const saveCharacter = (character: Character, user: User): Promise<Charact
         // Add new character
         charactersDB.push(charWithUser);
       }
+      saveCharactersToStorage(charactersDB);
       resolve(JSON.parse(JSON.stringify(charWithUser)));
-    }, 500);
+    }, 250);
   });
 };
 
 /**
- * Simulates deleting a character from the backend.
+ * Deletes a character from local storage.
  * @param characterId The ID of the character to delete.
  * @param user The user attempting to delete the character.
  * @returns A promise that resolves when the deletion is complete.
  */
 export const deleteCharacter = (characterId: string, user: User): Promise<void> => {
-  console.log(`${user.name} is attempting to delete character: ${characterId}`);
+  console.log(`${user.name} está tentando deletar o personagem: ${characterId}`);
   return new Promise((resolve, reject) => {
     setTimeout(() => {
+      const charactersDB = getCharactersFromStorage();
       const charIndex = charactersDB.findIndex((c) => c.id === characterId);
       if (charIndex === -1) {
-        return reject(new Error('Character not found.'));
+        return reject(new Error('Personagem não encontrado.'));
       }
 
       const characterToDelete = charactersDB[charIndex];
 
       if (user.isAdmin || characterToDelete.userId === user.id) {
         charactersDB.splice(charIndex, 1);
-        console.log('Deletion successful.');
+        saveCharactersToStorage(charactersDB);
+        console.log('Deleção bem-sucedida.');
         resolve();
       } else {
-        console.log('Deletion failed: Permission denied.');
-        reject(new Error('You do not have permission to delete this character.'));
+        console.log('Falha na deleção: Permissão negada.');
+        reject(new Error('Você não tem permissão para deletar este personagem.'));
       }
-    }, 500);
+    }, 250);
   });
 };

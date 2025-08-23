@@ -84,11 +84,13 @@ const CharacterSummaryModal: React.FC<CharacterSummaryModalProps> = ({ character
                     X
                 </button>
                 
-                <img 
-                    src={editableCharacter.avatar || defaultAvatar} 
-                    alt={`${editableCharacter.info.handle}'s avatar`}
-                    className="w-full max-w-[366px] aspect-square object-cover mx-auto mb-4 border-4 border-cyan-400"
-                />
+                <div className="w-full max-w-[360px] mx-auto aspect-square overflow-hidden mb-4 border-4 border-cyan-400">
+                    <img
+                        src={editableCharacter.avatar || defaultAvatar}
+                        alt={`${editableCharacter.info.handle}'s avatar`}
+                        className="w-full h-full object-cover"
+                    />
+                </div>
 
                 <h2 className="font-display text-4xl md:text-5xl text-cyan-300 uppercase shadow-[1px_1px_0px_#f00,-1px_-1px_0px_#0ff]">{editableCharacter.info.handle || 'Mercenário Sem Nome'}</h2>
                 <p className="font-display text-2xl text-red-500 mb-4">{editableCharacter.info.role || 'Sem Role'}</p>

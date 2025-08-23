@@ -28,10 +28,18 @@ export interface Weapon {
     notes: string;
 }
 
+export type CyberwareCategory = 
+  | 'Right Cybereye' | 'Left Cybereye'
+  | 'Right Cyberarm' | 'Left Cyberarm'
+  | 'Right Cyberleg' | 'Left Cyberleg'
+  | 'Cyberaudio Suite' | 'Neural Link'
+  | 'Internal' | 'External' | 'Fashionware' | 'Borgware';
+
 export interface Cyberware {
     id: string;
     name: string;
     loss: string;
+    category: CyberwareCategory;
 }
 
 export interface ArmorPiece {

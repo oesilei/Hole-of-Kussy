@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { jwtDecode } from 'jwt-decode';
-import LoginView from './components/LoginView';
 import CharacterListView from './components/CharacterListView';
 import CharacterSheetView from './components/CharacterSheetView';
 import ConfirmationModal from './components/ConfirmationModal';
@@ -8,14 +6,12 @@ import CharacterSummaryModal from './components/CharacterSummaryModal';
 import DiceRoller from './components/DiceRoller';
 import type { Character, User } from './types';
 import { View } from './types';
+import { createNewCharacter } from './constants';
 import {
-    simulateLogin,
     fetchCharacters,
     saveCharacter,
     deleteCharacter
 } from './api';
-
-declare var google: any;
 
 const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
@@ -30,31 +26,28 @@ const App: React.FC = () => {
         onConfirm: (() => void) | null;
     }>({ isOpen: false, message: '', onConfirm: null });
 
-    const handleLogin = useCallback(async (response: any) => {
-        setIsLoading(true);
-        try {
-            const googleUser: any = jwtDecode(response.credential);
-            const appUser = await simulateLogin(googleUser);
-            setUser(appUser);
-        } catch (error) {
-            console.error("Falha no login:", error);
-            setIsLoading(false);
-        }
+    useEffect(() => {
+        // Ignora o login e cria um usuário local para salvar os dados no navegador.
+        const localUser: User = {
+            id: 'local-user-01',
+            name: 'Mercenário Local',
+            email: 'local@nightcity.com',
+            picture: '',
+            isAdmin: true, // Permite gerenciar todos os personagens salvos localmente.
+        };
+        setUser(localUser);
     }, []);
 
     const handleLogout = () => {
-        if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-            google.accounts.id.disableAutoSelect();
+        if (window.confirm('Você tem certeza que quer sair? Isso irá APAGAR TODOS os personagens salvos no seu navegador.')) {
+            // O nome da chave aqui deve corresponder ao usado em api.ts
+            localStorage.removeItem('cyberpunk-red-characters');
+            window.location.reload();
         }
-        setUser(null);
-        setCharacters([]);
-        setView(View.LIST);
-        console.log("Usuário deslogado.");
     };
 
     useEffect(() => {
         if (!user) {
-            setIsLoading(false);
             return;
         }
 
@@ -156,16 +149,55 @@ const App: React.FC = () => {
         }
     }, [user]);
 
+    const handleImportCharacter = useCallback(async (characterData: Partial<Character>) => {
+        if (!user) {
+            console.error("Usuário não está logado. Não é possível importar.");
+            alert("Erro: usuário não encontrado. Não é possível importar.");
+            return;
+        }
+
+        const template = createNewCharacter();
+        
+        const importedCharacter: Character = {
+            ...template,
+            ...characterData,
+            info: { ...template.info, ...characterData.info },
+            stats: { ...template.stats, ...characterData.stats },
+            skills: { ...template.skills, ...characterData.skills },
+            combat: {
+                ...template.combat,
+                ...characterData.combat,
+                armor: { ...template.combat.armor, ...characterData.combat?.armor },
+                weapons: (characterData.combat?.weapons || []).map((w, i) => ({ ...w, id: `w_${Date.now()}_${i}` })),
+            },
+            cyberware: (characterData.cyberware || []).map((cw, i) => ({ ...cw, id: `cw_${Date.now()}_${i}` })),
+            lifepath: {
+                ...template.lifepath,
+                ...characterData.lifepath,
+                friends: (characterData.lifepath?.friends || []).map((f, i) => ({ ...f, id: `f_${Date.now()}_${i}` })),
+                enemies: (characterData.lifepath?.enemies || []).map((e, i) => ({ ...e, id: `e_${Date.now()}_${i}` })),
+                tragicLoveAffairs: (characterData.lifepath?.tragicLoveAffairs || []).map((t, i) => ({ ...t, id: `t_${Date.now()}_${i}` })),
+            },
+            housing: { ...template.housing, ...characterData.housing },
+            id: `char_${Date.now()}`,
+            userId: user.id,
+            userName: user.name,
+            avatar: characterData.avatar || '',
+        };
+
+        await handleSave(importedCharacter);
+        // Set view back to list, as handleSave does this already.
+        setView(View.LIST);
+
+    }, [user, handleSave]);
+
+
     const handleBack = () => {
         setView(View.LIST);
     };
     
-    if (isLoading) {
+    if (isLoading || !user) {
         return <div className="min-h-screen flex items-center justify-center font-display text-4xl text-cyan-300">Carregando...</div>;
-    }
-
-    if (!user) {
-        return <LoginView onLogin={handleLogin} />;
     }
 
     return (
@@ -179,6 +211,7 @@ const App: React.FC = () => {
                     onDelete={handleDelete}
                     onShowSummary={handleShowSummary}
                     onLogout={handleLogout}
+                    onImport={handleImportCharacter}
                 />
             )}
             {view === View.SHEET && (
