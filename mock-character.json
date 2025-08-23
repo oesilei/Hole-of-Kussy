@@ -1,0 +1,161 @@
+{
+  "avatar": "",
+  "info": {
+    "handle": "V (Importado)",
+    "role": "Solo",
+    "rank": "4",
+    "roleAbility": "Consciência de Combate"
+  },
+  "stats": {
+    "int": "6",
+    "ref": "8",
+    "dex": "7",
+    "tech": "5",
+    "cool": "8",
+    "will": "6",
+    "luck": "5",
+    "move": "6",
+    "body": "7",
+    "emp": "5"
+  },
+  "skills": {
+    "skill-concentracao": "4",
+    "skill-ver-ouvir": "6",
+    "skill-ocultar-revelar-objeto": "2",
+    "skill-atletismo": "6",
+    "skill-furtividade": "7",
+    "skill-conducao": "5",
+    "skill-deducao": "4",
+    "skill-conhecimento-local": "6",
+    "skill-briga": "6",
+    "skill-evasao": "7",
+    "skill-arma-corpo-a-corpo": "5",
+    "skill-pistolas": "8",
+    "skill-armas-de-ombro": "6",
+    "skill-percepcao-humana": "5",
+    "skill-persuasao": "4",
+    "skill-manha": "6",
+    "skill-tecnologia-basica": "4",
+    "skill-cybertecnologia": "2",
+    "skill-primeiros-socorros": "3"
+  },
+  "combat": {
+    "hp": "45",
+    "wounded": "23",
+    "death": "8",
+    "weapons": [
+      {
+        "id": "w1",
+        "name": "Nue",
+        "dmg": "3d6",
+        "ammo": "Pistol",
+        "rof": "2",
+        "notes": ""
+      },
+      {
+        "id": "w2",
+        "name": "Katana",
+        "dmg": "4d6",
+        "ammo": "",
+        "rof": "",
+        "notes": "Melee"
+      }
+    ],
+    "armor": {
+      "head": {
+        "sp": "11"
+      },
+      "body": {
+        "sp": "11"
+      },
+      "shield": {
+        "sp": "0"
+      }
+    }
+  },
+  "cyberware": [
+    {
+      "id": "cw1",
+      "name": "Olho Kiroshi MK.3",
+      "loss": "7",
+      "category": "Right Cybereye"
+    },
+    {
+      "id": "cw2",
+      "name": "Scanner Óptico",
+      "loss": "7",
+      "category": "Left Cybereye"
+    },
+    {
+      "id": "cw3",
+      "name": "Braços de Gorila",
+      "loss": "14",
+      "category": "Right Cyberarm"
+    },
+    {
+      "id": "cw4",
+      "name": "Mantis Blades",
+      "loss": "14",
+      "category": "Left Cyberarm"
+    },
+    {
+      "id": "cw5",
+      "name": "Acelerador Sandevistan",
+      "loss": "14",
+      "category": "Neural Link"
+    },
+    {
+      "id": "cw6",
+      "name": "Pele Subdérmica",
+      "loss": "7",
+      "category": "Internal"
+    }
+  ],
+  "eddies": "15000",
+  "lifepath": {
+    "culturalOrigins": "Nômade",
+    "personality": "Introspectivo e Leal",
+    "clothingStyle": "Jaqueta de Couro e Jeans",
+    "hairstyle": "Curto e Despenteado",
+    "valueMost": "Lealdade",
+    "valuedPerson": "Jackie Welles",
+    "feelingsAboutPeople": "Desconfiado, mas aberto a conexões",
+    "valuedPossession": "Sua jaqueta Samurai",
+    "familyBackground": "Criado em um clã nômade",
+    "childhoodEnvironment": "Estradas abertas e acampamentos",
+    "familyCrisis": "O clã se desfez após uma disputa interna",
+    "lifeGoals": "Se tornar uma lenda em Night City",
+    "friends": [
+      {
+        "id": "f1",
+        "name": "Judy Alvarez"
+      }
+    ],
+    "enemies": [
+      {
+        "id": "e1",
+        "name": "Arasaka Corp",
+        "details": "Roubou algo valioso deles."
+      }
+    ],
+    "tragicLoveAffairs": [
+      {
+        "id": "t1",
+        "name": "Evelyn Parker"
+      }
+    ],
+    "roleSpecificLifepath": ""
+  },
+  "gear": "- Comunicador\n- Kit de Ferramentas Básico\n- Lanterna",
+  "fashion": "Jaqueta Samurai, camiseta preta, calça cargo, botas de combate.",
+  "housing": {
+    "rent": "1000",
+    "lifestyle": "Contêiner"
+  },
+  "ammunition": "Munição de Pistola x50",
+  "aliases": "Mercenário de Watson",
+  "reputation": "Confiável, mas perigoso. (Nível 4)",
+  "notes": "Este personagem foi importado de um arquivo JSON. Tem uma dívida com o Ripperdoc local, Vik.",
+  "criticalInjuries": "Perna esquerda quebrada (curada)",
+  "addictions": "Nenhuma"
+}

@@ -1,0 +1,5 @@
+{
+  "name": "Cyberpunk Red Character Manager",
+  "description": "A web application to create, manage, and store character sheets for the Cyberpunk RED tabletop roleplaying game. All data is saved locally in your browser.",
+  "requestFramePermissions": []
+}
