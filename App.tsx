@@ -1,18 +1,24 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
+import { jwtDecode } from 'jwt-decode';
 import CharacterListView from './components/CharacterListView';
 import CharacterSheetView from './components/CharacterSheetView';
 import CharacterCreationWizard from './components/CharacterCreationWizard';
 import ConfirmationModal from './components/ConfirmationModal';
 import CharacterSummaryModal from './components/CharacterSummaryModal';
 import DiceRoller from './components/DiceRoller';
+import LoginView from './components/LoginView';
 import type { Character, User } from './types';
 import { View } from './types';
 import { createNewCharacter } from './constants';
 import {
     fetchCharacters,
     saveCharacter,
-    deleteCharacter
+    deleteCharacter,
+    simulateLogin
 } from './api';
+
+declare var google: any;
 
 const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
@@ -27,28 +33,30 @@ const App: React.FC = () => {
         onConfirm: (() => void) | null;
     }>({ isOpen: false, message: '', onConfirm: null });
 
-    useEffect(() => {
-        // Ignora o login e cria um usuário local para salvar os dados no navegador.
-        const localUser: User = {
-            id: 'local-user-01',
-            name: 'Mercenário Local',
-            email: 'local@nightcity.com',
-            picture: '',
-            isAdmin: true, // Permite gerenciar todos os personagens salvos localmente.
-        };
-        setUser(localUser);
+    const handleLogin = useCallback(async (credentialResponse: any) => {
+        try {
+            const decoded: any = jwtDecode(credentialResponse.credential);
+            const loggedInUser = await simulateLogin(decoded);
+            setUser(loggedInUser);
+        } catch (error) {
+            console.error("Login Failed:", error);
+            alert('Falha no login. Verifique o console para mais detalhes.');
+        }
     }, []);
 
     const handleLogout = () => {
-        if (window.confirm('Você tem certeza que quer sair? Isso irá APAGAR TODOS os personagens salvos no seu navegador.')) {
-            // O nome da chave aqui deve corresponder ao usado em api.ts
-            localStorage.removeItem('cyberpunk-red-characters');
-            window.location.reload();
+        if (window.confirm('Você tem certeza que quer sair?')) {
+            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+            setUser(null);
+            setCharacters([]); // Limpa os personagens da tela
         }
     };
 
     useEffect(() => {
         if (!user) {
+            setIsLoading(false);
             return;
         }
 
@@ -198,8 +206,12 @@ const App: React.FC = () => {
         setView(View.LIST);
     };
     
-    if (isLoading || !user) {
-        return <div className="min-h-screen flex items-center justify-center font-display text-4xl text-cyan-300">Carregando...</div>;
+    if (!user) {
+        return <LoginView onLogin={handleLogin} />;
+    }
+    
+    if (isLoading) {
+        return <div className="min-h-screen flex items-center justify-center font-display text-4xl text-cyan-300">Carregando Personagens...</div>;
     }
 
     return (
