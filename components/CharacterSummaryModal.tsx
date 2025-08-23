@@ -38,6 +38,11 @@ const CharacterSummaryModal: React.FC<CharacterSummaryModalProps> = ({ character
         const current = max - loss;
         return { current, max };
     }, [editableCharacter]);
+    
+    const deathSave = useMemo(() => {
+        return editableCharacter?.stats?.body || '0';
+    }, [editableCharacter?.stats?.body]);
+
 
     if (!editableCharacter) return null;
     
@@ -52,7 +57,7 @@ const CharacterSummaryModal: React.FC<CharacterSummaryModalProps> = ({ character
         setEditableCharacter(prev => prev ? { ...prev, eddies: e.target.value } : null);
     };
 
-    const handleCombatChange = (field: 'hp' | 'wounded' | 'death', value: string) => {
+    const handleCombatChange = (field: 'hp' | 'wounded', value: string) => {
         setEditableCharacter(prev => {
             if (!prev) return null;
             return {
@@ -120,7 +125,10 @@ const CharacterSummaryModal: React.FC<CharacterSummaryModalProps> = ({ character
                     <div className="grid grid-cols-3 gap-4 mb-4">
                         <SummaryInput label="PV" value={editableCharacter.combat.hp} onChange={(e) => handleCombatChange('hp', e.target.value)} />
                         <SummaryInput label="Ferido" value={editableCharacter.combat.wounded} onChange={(e) => handleCombatChange('wounded', e.target.value)} />
-                        <SummaryInput label="Morte" value={editableCharacter.combat.death} onChange={(e) => handleCombatChange('death', e.target.value)} />
+                        <div className="bg-cyan-900/10 p-2 border border-cyan-400/50">
+                            <label className="text-sm text-cyan-300 block text-center">Morte</label>
+                            <p className="w-full bg-transparent text-2xl font-bold text-white text-center p-0">{deathSave}</p>
+                        </div>
                     </div>
                     <h4 className="font-display text-xl text-cyan-300 mb-2">BLINDAGEM</h4>
                     <div className="grid grid-cols-3 gap-4">

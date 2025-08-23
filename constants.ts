@@ -51,6 +51,18 @@ export const CYBERWARE_CATEGORIES: CyberwareCategory[] = [
     'Internal', 'External', 'Fashionware', 'Borgware'
 ];
 
+export const STREETRAT_STATS_ARRAYS = [
+    { name: 'Array 1', stats: { int: '6', ref: '7', dex: '7', tech: '6', cool: '8', will: '6', luck: '5', move: '6', body: '6', emp: '5' } },
+    { name: 'Array 2', stats: { int: '7', ref: '8', dex: '6', tech: '5', cool: '6', will: '6', luck: '6', move: '5', body: '7', emp: '6' } },
+    { name: 'Array 3', stats: { int: '6', ref: '6', dex: '6', tech: '8', cool: '7', will: '8', luck: '3', move: '4', body: '8', emp: '6' } },
+    { name: 'Array 4', stats: { int: '8', ref: '8', dex: '8', tech: '3', cool: '5', will: '6', luck: '4', move: '6', body: '5', emp: '5' } },
+    { name: 'Array 5', stats: { int: '5', ref: '6', dex: '7', tech: '7', cool: '6', will: '5', luck: '8', move: '6', body: '6', emp: '8' } },
+];
+
+export const EDGERUNNER_POINTS = 62;
+export const STAT_MIN = 2;
+export const STAT_MAX = 8;
+
 export const createNewCharacter = (): Character => ({
   id: '',
   avatar: '',
@@ -77,7 +89,7 @@ export const createNewCharacter = (): Character => ({
     friends: [], enemies: [], tragicLoveAffairs: [],
     roleSpecificLifepath: '',
   },
-  gear: '', fashion: '', ammunition: '', aliases: '', reputation: '', notes: '',
+  gear: '', fashion: '', ammunition: [], aliases: '', reputation: '', notes: '',
   criticalInjuries: '', addictions: '',
   housing: { rent: '', lifestyle: '' },
   userId: '',

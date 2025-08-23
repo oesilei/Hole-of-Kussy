@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import CharacterListView from './components/CharacterListView';
 import CharacterSheetView from './components/CharacterSheetView';
+import CharacterCreationWizard from './components/CharacterCreationWizard';
 import ConfirmationModal from './components/ConfirmationModal';
 import CharacterSummaryModal from './components/CharacterSummaryModal';
 import DiceRoller from './components/DiceRoller';
@@ -69,7 +70,7 @@ const App: React.FC = () => {
 
     const handleAddNew = () => {
         setEditingCharacter(null);
-        setView(View.SHEET);
+        setView(View.CREATION);
     };
 
     const handleEdit = (id: string) => {
@@ -183,6 +184,7 @@ const App: React.FC = () => {
             userId: user.id,
             userName: user.name,
             avatar: characterData.avatar || '',
+            ammunition: [], // Ensure ammunition is initialized correctly on import
         };
 
         await handleSave(importedCharacter);
@@ -212,6 +214,12 @@ const App: React.FC = () => {
                     onShowSummary={handleShowSummary}
                     onLogout={handleLogout}
                     onImport={handleImportCharacter}
+                />
+            )}
+            {view === View.CREATION && (
+                <CharacterCreationWizard
+                    onSave={handleSave}
+                    onBack={handleBack}
                 />
             )}
             {view === View.SHEET && (

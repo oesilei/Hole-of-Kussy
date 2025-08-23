@@ -76,6 +76,11 @@ export interface TragicLoveAffair {
     name: string;
 }
 
+export interface AmmunitionItem {
+    id: string;
+    type: string;
+    quantity: string;
+}
 
 export interface Lifepath {
     culturalOrigins: string;
@@ -124,7 +129,7 @@ export interface Character {
     gear: string;
     fashion: string;
     housing: Housing;
-    ammunition: string;
+    ammunition: AmmunitionItem[];
     aliases: string;
     reputation: string;
     notes: string;
@@ -139,4 +144,5 @@ export interface Character {
 export enum View {
     LIST,
     SHEET,
+    CREATION,
 }

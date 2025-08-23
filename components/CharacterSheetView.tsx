@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import type { Character, Weapon, Cyberware, Lifepath, Friend, Enemy, TragicLoveAffair, User, CyberwareCategory } from '../types';
+import React, { useState, useMemo, useEffect } from 'react';
+import type { Character, Weapon, Cyberware, Lifepath, Friend, Enemy, TragicLoveAffair, User, CyberwareCategory, AmmunitionItem } from '../types';
 import { STATS_LIST, SKILL_CATEGORIES, ALL_SKILLS, getSkillId, ROLES_LIST, createNewCharacter } from '../constants';
 import CyberwareView from './CyberwareView';
 
@@ -28,7 +28,7 @@ const CyberLabeledInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & 
                 {...props}
                 id={id}
                 placeholder=" "
-                className={`peer w-full p-2 bg-cyan-900/10 border border-cyan-400 text-gray-100 transition-all duration-300 focus:outline-none focus:shadow-[0_0_10px_#0ff] focus:bg-cyan-900/20 ${props.className}`}
+                className={`peer w-full p-2 bg-cyan-900/10 border border-cyan-400 text-gray-100 transition-all duration-300 focus:outline-none focus:shadow-[0_0_10px_#0ff] focus:bg-cyan-900/20 disabled:bg-gray-700/20 disabled:cursor-not-allowed ${props.className}`}
             />
             <label
                 htmlFor={id}
@@ -124,6 +124,7 @@ const CharacterSheetView: React.FC<CharacterSheetViewProps> = ({ character, user
                 tragicLoveAffairs: character?.lifepath?.tragicLoveAffairs || [],
             },
             housing: { ...newCharTemplate.housing, ...character?.housing },
+            ammunition: character?.ammunition || [],
         };
         return initialData;
     });
@@ -137,6 +138,13 @@ const CharacterSheetView: React.FC<CharacterSheetViewProps> = ({ character, user
         const current = max - loss;
         return { current, max };
     }, [sheetData.stats.emp, sheetData.cyberware]);
+    
+    useEffect(() => {
+        const body = parseInt(sheetData.stats.body, 10) || 0;
+        if (String(body) !== sheetData.combat.death) {
+            handleNestedChange('combat', 'death', String(body));
+        }
+    }, [sheetData.stats.body]);
 
     const handleNestedChange = <T extends keyof Character>(section: T, field: keyof Character[T], value: any) => {
         setSheetData(prev => ({
@@ -148,20 +156,21 @@ const CharacterSheetView: React.FC<CharacterSheetViewProps> = ({ character, user
         }));
     };
     
-    const handleRootChange = (field: keyof Character, value: string) => {
+    const handleRootChange = (field: keyof Omit<Character, 'ammunition'>, value: string) => {
         setSheetData(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleDynamicListChange = <T extends 'weapons' | 'cyberware' | 'friends' | 'enemies' | 'tragicLoveAffairs'>(
+    const handleDynamicListChange = <T extends 'weapons' | 'cyberware' | 'friends' | 'enemies' | 'tragicLoveAffairs' | 'ammunition'>(
         listName: T,
         index: number,
-        field: T extends 'weapons' ? keyof Weapon : T extends 'cyberware' ? keyof Cyberware : T extends 'friends' ? keyof Friend : T extends 'enemies' ? keyof Enemy : keyof TragicLoveAffair,
+        field: T extends 'weapons' ? keyof Weapon : T extends 'cyberware' ? keyof Cyberware : T extends 'friends' ? keyof Friend : T extends 'enemies' ? keyof Enemy : T extends 'tragicLoveAffairs' ? keyof TragicLoveAffair : keyof AmmunitionItem,
         value: string
     ) => {
         setSheetData(prev => {
             let list;
             if (listName === 'weapons') list = [...prev.combat.weapons];
             else if (listName === 'cyberware') list = [...prev.cyberware];
+            else if (listName === 'ammunition') list = [...prev.ammunition];
             else list = [...prev.lifepath[listName as 'friends' | 'enemies' | 'tragicLoveAffairs']];
 
             const item = { ...list[index], [field]: value };
@@ -169,12 +178,13 @@ const CharacterSheetView: React.FC<CharacterSheetViewProps> = ({ character, user
 
             if (listName === 'weapons') return { ...prev, combat: { ...prev.combat, weapons: list as Weapon[] } };
             if (listName === 'cyberware') return { ...prev, cyberware: list as Cyberware[] };
+            if (listName === 'ammunition') return { ...prev, ammunition: list as AmmunitionItem[] };
             
             return { ...prev, lifepath: { ...prev.lifepath, [listName as 'friends' | 'enemies' | 'tragicLoveAffairs']: list } };
         });
     };
     
-    const addListItem = <T extends 'weapons' | 'cyberware' | 'friends' | 'enemies' | 'tragicLoveAffairs'>(listName: T, category?: CyberwareCategory) => {
+    const addListItem = <T extends 'weapons' | 'cyberware' | 'friends' | 'enemies' | 'tragicLoveAffairs' | 'ammunition'>(listName: T, category?: CyberwareCategory) => {
         const id = `item_${Date.now()}`;
         let newItem: any;
         if (listName === 'weapons') newItem = { id, name: '', dmg: '', ammo: '', rof: '', notes: '' };
@@ -182,24 +192,28 @@ const CharacterSheetView: React.FC<CharacterSheetViewProps> = ({ character, user
         else if (listName === 'friends') newItem = { id, name: '' };
         else if (listName === 'enemies') newItem = { id, name: '', details: '' };
         else if (listName === 'tragicLoveAffairs') newItem = { id, name: '' };
+        else if (listName === 'ammunition') newItem = { id, type: '', quantity: '' };
 
         setSheetData(prev => {
             if (listName === 'weapons') return { ...prev, combat: { ...prev.combat, weapons: [...prev.combat.weapons, newItem] } };
             if (listName === 'cyberware') return { ...prev, cyberware: [...prev.cyberware, newItem] };
+            if (listName === 'ammunition') return { ...prev, ammunition: [...prev.ammunition, newItem] };
             const lifepathListName = listName as 'friends' | 'enemies' | 'tragicLoveAffairs';
             return { ...prev, lifepath: { ...prev.lifepath, [lifepathListName]: [...prev.lifepath[lifepathListName], newItem] } };
         });
     };
     
-    const removeListItem = <T extends 'weapons' | 'cyberware' | 'friends' | 'enemies' | 'tragicLoveAffairs'>(listName: T, id: string) => {
+    const removeListItem = <T extends 'weapons' | 'cyberware' | 'friends' | 'enemies' | 'tragicLoveAffairs' | 'ammunition'>(listName: T, id: string) => {
         setSheetData(prev => {
             let list;
             if (listName === 'weapons') list = prev.combat.weapons.filter(item => item.id !== id);
             else if (listName === 'cyberware') list = prev.cyberware.filter(item => item.id !== id);
+            else if (listName === 'ammunition') list = prev.ammunition.filter(item => item.id !== id);
             else list = prev.lifepath[listName as 'friends' | 'enemies' | 'tragicLoveAffairs'].filter((item: any) => item.id !== id);
 
             if (listName === 'weapons') return { ...prev, combat: { ...prev.combat, weapons: list as Weapon[] } };
             if (listName === 'cyberware') return { ...prev, cyberware: list as Cyberware[] };
+            if (listName === 'ammunition') return { ...prev, ammunition: list as AmmunitionItem[] };
             return { ...prev, lifepath: { ...prev.lifepath, [listName as 'friends' | 'enemies' | 'tragicLoveAffairs']: list } };
         });
     };
@@ -302,7 +316,7 @@ const CharacterSheetView: React.FC<CharacterSheetViewProps> = ({ character, user
                              <div className="grid grid-cols-3 gap-3 mb-4">
                                <CyberLabeledInput type="number" label="PV" className="text-center" value={sheetData.combat.hp} onChange={e => handleNestedChange('combat', 'hp', e.target.value)} />
                                <CyberLabeledInput type="number" label="Ferido" className="text-center" value={sheetData.combat.wounded} onChange={e => handleNestedChange('combat', 'wounded', e.target.value)} />
-                               <CyberLabeledInput type="number" label="Teste de Morte" className="text-center" value={sheetData.combat.death} onChange={e => handleNestedChange('combat', 'death', e.target.value)} />
+                               <CyberLabeledInput type="number" label="Teste de Morte" className="text-center" value={sheetData.combat.death} readOnly onChange={()=>{}} />
                             </div>
                             <h4 className="font-display text-xl text-cyan-300 mb-2">BLINDAGEM</h4>
                             <div className="grid grid-cols-3 gap-3 mb-4">
@@ -429,7 +443,17 @@ const CharacterSheetView: React.FC<CharacterSheetViewProps> = ({ character, user
                             <CyberLabeledInput type="number" label="Grana (E$)" value={sheetData.eddies} onChange={e => handleRootChange('eddies', e.target.value)} className="mb-4" />
                             <CyberLabeledTextarea label="Equipamentos" rows={10} value={sheetData.gear} onChange={e => handleRootChange('gear', e.target.value)} />
                              <div className="mt-4">
-                                <CyberLabeledTextarea label="Munição" rows={5} value={sheetData.ammunition} onChange={e => handleRootChange('ammunition', e.target.value)} />
+                                <h4 className="font-display text-xl text-cyan-300 mb-2">Munição</h4>
+                                <div className="space-y-2">
+                                    {sheetData.ammunition.map((ammo, index) => (
+                                        <div key={ammo.id} className="grid grid-cols-[1fr_80px_auto] gap-2 items-center">
+                                            <CyberLabeledInput type="text" label="Tipo" value={ammo.type} onChange={e => handleDynamicListChange('ammunition', index, 'type', e.target.value)} />
+                                            <CyberLabeledInput type="number" label="Qtd." className="text-center" value={ammo.quantity} onChange={e => handleDynamicListChange('ammunition', index, 'quantity', e.target.value)} />
+                                            <button type="button" onClick={() => removeListItem('ammunition', ammo.id)} className="self-center h-[42px] px-2 text-xs rounded-none bg-transparent border-2 border-red-500 text-red-500 transition-all duration-300 uppercase hover:bg-red-500 hover:text-gray-900">X</button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button type="button" onClick={() => addListItem('ammunition')} className="text-xs mt-2 py-1 px-2 rounded-none bg-transparent border-2 border-red-500 text-red-500 transition-all duration-300 uppercase hover:bg-red-500 hover:text-gray-900">+ Munição</button>
                              </div>
                         </Section>
                     </div>
