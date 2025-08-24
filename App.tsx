@@ -1,6 +1,5 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { jwtDecode } from 'jwt-decode';
+import React, { useState, useEffect } from 'react';
+// import { jwtDecode } from 'jwt-decode'; // Não é mais necessário para o login
 import CharacterListView from './components/CharacterListView';
 import CharacterSheetView from './components/CharacterSheetView';
 import CharacterCreationWizard from './components/CharacterCreationWizard';
@@ -14,15 +13,17 @@ import { createNewCharacter } from './constants';
 import {
     fetchCharacters,
     saveCharacter,
-    deleteCharacter,
-    simulateLogin
+    deleteCharacter
+    // simulateLogin não é mais necessário
 } from './api';
+import { supabase } from './supabaseClient'; // Importe o cliente Supabase
+import { Session } from '@supabase/supabase-js'; // Importe o tipo Session
 
-declare var google: any;
+// declare var google: any; // Não é mais necessário
 
 const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isLoading, setIsLoading] = useState<boolean>(true); // isLoading agora é controlado pelo Supabase
     const [view, setView] = useState<View>(View.LIST);
     const [characters, setCharacters] = useState<Character[]>([]);
     const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
@@ -33,48 +34,63 @@ const App: React.FC = () => {
         onConfirm: (() => void) | null;
     }>({ isOpen: false, message: '', onConfirm: null });
 
-    const handleLogin = useCallback(async (credentialResponse: any) => {
-        try {
-            const decoded: any = jwtDecode(credentialResponse.credential);
-            const loggedInUser = await simulateLogin(decoded);
-            setUser(loggedInUser);
-        } catch (error) {
-            console.error("Login Failed:", error);
-            alert('Falha no login. Verifique o console para mais detalhes.');
-        }
+    // NOVO: Gerenciamento de sessão com Supabase
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                // Cria um objeto 'user' a partir da sessão do Supabase
+                const currentUser: User = {
+                    id: session.user.id,
+                    name: session.user.user_metadata.full_name || 'Usuário',
+                    email: session.user.email || '',
+                    picture: session.user.user_metadata.avatar_url,
+                    isAdmin: false, // Adicione sua lógica de admin aqui se necessário
+                };
+                setUser(currentUser);
+            } else {
+                setUser(null);
+            }
+            setIsLoading(false); // Finaliza o carregamento após verificar a sessão
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
-    const handleLogout = () => {
-        if (window.confirm('Você tem certeza que quer sair?')) {
-            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-                google.accounts.id.disableAutoSelect();
-            }
-            setUser(null);
-            setCharacters([]); // Limpa os personagens da tela
-        }
-    };
-
+    // Efeito para carregar os personagens QUANDO o usuário mudar
     useEffect(() => {
-        if (!user) {
-            setIsLoading(false);
-            return;
+        if (user) {
+            const loadCharacters = async () => {
+                setIsLoading(true);
+                try {
+                    const chars = await fetchCharacters(user);
+                    setCharacters(chars);
+                } catch (error) {
+                    console.error("Falha ao carregar personagens:", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            loadCharacters();
+        } else {
+            // Se não há usuário, limpa a lista de personagens
+            setCharacters([]);
         }
-
-        const loadCharacters = async () => {
-            setIsLoading(true);
-            try {
-                const chars = await fetchCharacters(user);
-                setCharacters(chars);
-            } catch (error) {
-                console.error("Falha ao carregar personagens:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        loadCharacters();
     }, [user]);
 
+    // ATUALIZADO: Logout com Supabase
+    const handleLogout = async () => {
+        if (window.confirm('Você tem certeza que quer sair?')) {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error('Erro ao fazer logout:', error);
+            } else {
+                setUser(null); // Limpa o usuário do estado local
+            }
+        }
+    };
+    
+    // As funções abaixo (handleAddNew, handleEdit, etc.) continuam iguais por enquanto.
+    // Iremos modificá-las quando atualizarmos o api.ts.
 
     const handleAddNew = () => {
         setEditingCharacter(null);
@@ -98,7 +114,7 @@ const App: React.FC = () => {
                 message: `Você tem certeza que quer deletar "${charToDelete.info.handle || 'Mercenário Sem Nome'}"?`,
                 onConfirm: async () => {
                     try {
-                        await deleteCharacter(id, user);
+                        await deleteCharacter(id, user); // Esta função será atualizada depois
                         setCharacters(prevChars => prevChars.filter(c => c.id !== id));
                     } catch (error) {
                         console.error("Falha ao deletar personagem:", error);
@@ -126,13 +142,13 @@ const App: React.FC = () => {
         setModalState({ isOpen: false, message: '', onConfirm: null });
     };
 
-    const handleSave = useCallback(async (character: Character) => {
+    const handleSave = async (character: Character) => {
         if (!user) {
             console.error("Usuário não está logado. Não é possível salvar.");
             return;
         }
         try {
-            const savedChar = await saveCharacter(character, user);
+            const savedChar = await saveCharacter(character, user); // Esta função será atualizada
             setCharacters(prevChars => {
                 const exists = prevChars.some(c => c.id === savedChar.id);
                 if (exists) {
@@ -144,21 +160,21 @@ const App: React.FC = () => {
         } catch (error) {
              console.error("Falha ao salvar personagem:", error);
         }
-    }, [user]);
+    };
 
-    const handleUpdateFromSummary = useCallback(async (character: Character) => {
+    const handleUpdateFromSummary = async (character: Character) => {
         if (!user) return;
          try {
-            const savedChar = await saveCharacter(character, user);
+            const savedChar = await saveCharacter(character, user); // Esta função será atualizada
              setCharacters(prevChars => {
                 return prevChars.map(c => c.id === savedChar.id ? savedChar : c);
             });
         } catch (error) {
              console.error("Falha ao atualizar personagem:", error);
         }
-    }, [user]);
+    };
 
-    const handleImportCharacter = useCallback(async (characterData: Partial<Character>) => {
+    const handleImportCharacter = async (characterData: Partial<Character>) => {
         if (!user) {
             console.error("Usuário não está logado. Não é possível importar.");
             alert("Erro: usuário não encontrado. Não é possível importar.");
@@ -192,26 +208,25 @@ const App: React.FC = () => {
             userId: user.id,
             userName: user.name,
             avatar: characterData.avatar || '',
-            ammunition: [], // Ensure ammunition is initialized correctly on import
+            ammunition: [],
         };
 
         await handleSave(importedCharacter);
-        // Set view back to list, as handleSave does this already.
         setView(View.LIST);
-
-    }, [user, handleSave]);
+    };
 
 
     const handleBack = () => {
         setView(View.LIST);
     };
     
-    if (!user) {
-        return <LoginView onLogin={handleLogin} />;
-    }
-    
     if (isLoading) {
-        return <div className="min-h-screen flex items-center justify-center font-display text-4xl text-cyan-300">Carregando Personagens...</div>;
+        return <div className="min-h-screen flex items-center justify-center font-display text-4xl text-cyan-300">Autenticando...</div>;
+    }
+
+    if (!user) {
+        // A função onLogin não é mais necessária, o listener do Supabase cuida de tudo
+        return <LoginView />;
     }
 
     return (
